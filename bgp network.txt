@@ -1,0 +1,5 @@
+First I set up 2 interfaces on each vyos with each eth0 being 10.10.10.x/24 (1,2,3) and 192.168.1.x/24 (1,2,3)
+Second, I set up 3 VLANs. The first VLAN is native but the other 2 were set up via 192.168.y.x/24. X represents the respective vyos while y is the segmented vlan representation
+Third, set up a dhcp server to issue addresses across the 3 VLANs
+
+2 issues: vyos 3 eth0 is 10.10.10.3 while the other 2 are 1.1.1.x. Can't do 1.1.1.3 because that is the broadcast addresses. Probably #2 is that they can't ping each other.

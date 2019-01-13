@@ -1,0 +1,21 @@
+what is bgp?
+	- Stands for border gateway protocol. It manages how packets routed through exchanging routing and reachability information.
+	- Routes between ASs
+	
+Reference: https://searchtelecom.techtarget.com/definition/BGP
+
+What is ibgp?
+	- Stands for internal border gateway protocol. It is used for routing traffic within a single autonomous system.
+
+What is ebgp?
+	- Stands for external border gateway protocol. Used for routing traffic across ASs
+
+autonomous system
+	- collection of networks that are managed by an organization
+	- prevents routing loops which is when packets are routed continously without a destination
+Reference: https://wiki.vyos.net/wiki/BGP	
+autonomous system number
+	- Comparative to ipv4 addresses.
+	- Uniquely identifies the AS system
+	- 16 bit AS #s: 1 - 64511 for globally && 64512 - 65535 for private use
+	- 32 bit AS #s:  4,294,967,296 unique values

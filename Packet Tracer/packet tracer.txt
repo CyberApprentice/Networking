@@ -1,0 +1,116 @@
+packet tracer - 3 cisco switches 2960 connected to each other with 2 hosts on the 3 switches
+
+0. first access to a switch, you have to enable to configure it
+	1 - enable
+	2 - conf t (configure terminal)
+	
+1. Create a vlan through the switch for the connection to the hosts
+	1 - vlan x
+	2 - name vlanx
+	exit
+	3 - interface fastEthernet (port) (ex: 0/4)
+	4 - switchport mode access
+	5 - switchport access vlan 2
+	6 - interface vlan x
+	7 - ip address (ip address) (mask) (ex: 172.16.1.1 255.255.255.0)
+	8 - no shut
+	
+1.2 setting up native vlan for all three switches
+	1 - interface vlan 1
+	2 - ip address 1.1.1.1 255.255.255.248
+						.2
+						.3
+	3 - no shut
+
+1.3 trunk the switches connections to each other
+	1 - interface fastethernet (interface) (ex: 0/2)
+	2 - switchport mode trunk
+						
+2 set up the layer 3 switch	
+	1 - 
+	
+	
+	
+Basic:
+1) set up 2 hosts, switch, and layer 3 switch	
+2) switch 1
+		- vlan 2
+		ex
+		- vlan 3
+		ex
+		- interface fa0/1
+		- switchport access vlan 2
+		ex
+		- interface fa0/2
+		- switchport access vlan 3
+		exit
+		- interface fa0/3
+		- switchport mode trunk
+		ex
+		ex
+		
+3) layer 3 switch
+	- vlan 2
+	ex
+	- vlan 3
+	ex
+	- interface fa0/1
+	- switchport trunk encapsulation dot1q
+	- switch mode trunk
+	ex
+	- interface vlan 2
+	- ip address 40.0.0.1 255.0.0.0
+	- no sh
+	ex
+	- ip default-gateway 40.0.0.1
+	- interface vlan 3
+	- ip address 120.0.0.1 255.0.0.0
+	- no sh
+	ex
+	- ip default-gateway 120.0.0.1
+	- ip routing
+	
+Attempt after doing basic:
+
+1) set up switches, hosts, and layer 3 switch
+2) first switch
+	- vlan 2
+	ex
+	- vlan 3
+	ex
+	- interface fa0/4
+	- switchport access vlan 2
+	ex
+	- interface fa0/5
+	- switchport access vlan 3
+	ex
+	- interface range fastEthernet 0/1 - fastEthernet 0/3
+	- switchport mode trunk
+	ex
+	ex
+	-show vlan #to verify
+	
+3) repeat 2) for all switches
+
+4) layer 3 switch
+	- vlan 2
+	ex
+	- vlan 3
+	ex
+	- interface range fastEthernet 0/1 - fastEthernet 0/3
+	- switchport trunk encapsulation dot1q
+	- switchport mode trunk
+	ex
+	- interface vlan 2
+	- ip address 40.0.0.1 255.0.0.0
+	- no shutdown
+	ex
+	- ip default-gateway 40.0.0.1
+	ex
+	- interface vlan 3
+	- ip address 120.0.0.1 255.0.0.0
+	- no shutdown
+	ex
+	- ip default-gateway 120.0.0.1
+	- ip routing
+	ex
