@@ -1,0 +1,41 @@
+IP tables rules list:
+
+
+
+####################################     1     ####################################
+
+Device in the middle of internet and subnet so we forward traffic to the subnet for Internet
+eth0 = Internet
+eth1 = subnet
+
+---------optional---------
+(for DNS & dhcp setup)
+
+ # sudo apt-get install dnsmasq 
+    # sudo nano /etc/dhcpcd.conf
+        - interface eth1
+            static ip_address=172.24.1.1/24
+    # sudo service dhcpcd restart
+    # sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig  
+    # sudo nano /etc/dnsmasq.conf
+        - interface=eth1      # Use interface wlan0  
+            bind-interfaces      # Bind to the interface to make sure we aren't sending things elsewhere  
+            server=8.8.8.8       # Forward DNS requests to Google DNS  
+            domain-needed        # Don't forward short names  
+            bogus-priv           # Never forward addresses in the non-routed address spaces.  
+            dhcp-range=172.24.1.50,172.24.1.150,12h # Assign IP addresses between 172.24.1.50 and 172.24.1.150 with a 12 hour lease time
+    # sudo nano /etc/sysctl.conf
+        - net.ipv4.ip_forward=1 #uncomment this line
+---------optional---------
+
+
+# sudo apt install iptables-persistent                                              # makes rules stick after bootup (better than storing in rc.local) source: https://unix.stackexchange.com/questions/52376/why-do-iptables-rules-disappear-when-restarting-my-debian-system
+
+# sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE  
+# sudo iptables -A FORWARD -i eth0 -o eth1 -m state --state RELATED,ESTABLISHED -j ACCEPT  
+# sudo iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT
+
+
+# /sbin/iptables-save > /etc/iptables/rules
+
+####################################     1     ####################################
