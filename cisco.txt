@@ -1,0 +1,26 @@
+enable0
+confirm version - show version
+get IP address
+{
+conf t
+int vlan 1
+no shut
+ip add dhcp
+}
+
+Delete previous image:
+delete flash:x.bin
+
+Transfer IOS image:
+copy tftp://10.0.1.x/3750-ipservicesk9-mz.122-55.SE12.bin flash:
+
+upgrading:
+verify IOS - dir flash:
+set boot variable - boot system switch all flash:/3750-ipservicesk9-mz.122-55.SE12.bin
+save - write memory
+restart - reload
+check updates - show version
+
+Notes: if getting timed out errors, open up the firewall on the server (windows) machine so that the cisco device can connect. Open up UDP port 69.
+
+Couldn't use SCP because the ciphers weren't availabe.

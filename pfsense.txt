@@ -1,0 +1,124 @@
+pfsense
+
+port forwarding (Firewall > NAT > Port Forward)
+I had the misunderstanding of setting up this rule so I'll clarify setting up the rule.
+
+To explain port forwarding, it's basically the outside is connecting to you from one port (i.e. 90) but once it reaches pfsense, it's translated to the port you're actually hosting the server (i.e. 100). 
+Example setup:
+Server: nc -l -p 99
+Client: nc 192.168.1.1 100
+Client: "Hello world!"
+Server: You'll see this word despite the ports mismatching because the router is switching them accordingly.
+
+
+1. Create a new rule
+2. Set the Interface to the outside interface connecting to you.
+    - This is WAN in most cases.
+    - I had netcat on my OPT1 interface and my client was on my LAN so in this case, my interface was LAN.
+3. Protocol is set to TCP/UDP or whatever is your setup
+    - to test for both tcp and udp, I used "nc -l -p 99" for tcp and "nc -u -l -p 99" for UDP with the "-u" tag for the client as well
+4. Source is the client
+5. Destination is the server the client is trying to connect to; the public facing address
+    - If this 1:1 is enabled, make sure you specify the NAT address rather than the internal address
+6. Destination port range is the port the client is connecting on, 100 in my case
+7. Redirect target IP is the server's IPv4 that's hosting the service
+8. Redirect target port is the server's port that's hosting the service, 99 in my case
+    - this is where the port will transfer from the outside client's 100 to the server's 99 port
+9. done!
+
+
+1:1 (Firewall > NAT > 1:1)
+
+Similar to above.
+
+1. Set the Interface to the outside interface connecting to you.
+    - This is WAN in most cases.
+    - I had netcat on my OPT1 interface and my client was on my LAN so in this case, my interface was LAN.
+2. External Subnet IP - is the IP address the client is trying to connect to; the address you want visible
+3. Internal IP - the internal IP of the Server
+4. Destination - the client (Internet)
+    - typically any
+
+Outbound (Firewall > NAT > Outbound)
+
+A bit different configurations because we're doing NAT on everything leaving the router.
+I did this using ping. I have wireshark & tcpdump running on my OPT1 interface and LAN side is just pinging
+
+0. Change the mode to "Manual Outbound NAT rule generation. (AON - Advanced Outbound NAT)"
+1. Create a new rule
+2. Set interface to server side, OPT1 in my case.
+3. set protocol to ICMP
+4. Source is set to any (this is from the pinger)
+5. Destination is set to the server side's subnet.
+6. In the Translation section, this is where you can specify the address for the server to see.
+    - If you leave the Address option on "interface address" then the address of pfsense will be seen.
+        - ex:   server = 192.168.1.2, pfsense = 192.168.1.1, client - 10.0.0.2.
+                Client pings server @ 192.168.1.2
+                Server sees packets from 192.168.1.1.
+    - If you set the option to "Other Subnet (Enter Below)", then the server will see a separate address based off the settings.
+        - set other subnet to 172.16.0.0/24
+        - set pool options to random
+        - EX:   server = 192.168.1.2, pfsense = 192.168.1.1, client - 10.0.0.2.
+                Client pings server @ 192.168.1.2
+                server sees packets from 172.16.0.34    // the server will see random addresses each time a new pinging session occurs (not every ping packet)
+        - The server is unable to ping back to the client
+        - Side note * you could also set the address to 0.0.0.0 and CIDR to "1" for random addresses between 0.0.0.1 - 255.255.255.254
+
+
+
+Network Prefix Translation (NPT) (Firewall > NAT > NPT)
+This is 1:1 NAT but on the entire prefix (subnet). In my example, my internal server-side ipv6 is f::0/112 (f:0:0:0:0:0:0:x) while my client is trying to connect from e::1/112. I don't want them to know my internal prefix, so we change it to a::0/112 so they'll connect via a::2 to reach my server at f::2.
+
+1) Create a new rule
+2) Set interface to the WAN link (The Internet; the interface cloest to the client)
+    - in my case, I had my LAN interface hosting my server and my OPT1 interface being the clide side so I placed OPT1 here
+3) Set Address to your current internal prefix
+    - mine is f::0/112
+4) Set the second Address field to what you want visible. The description below states "Global Unicast routable IPv6 prefix" for clarity.
+    - I set this to a::0/112
+Now when the client tries to connect to my server at f::2, it can connect via a::2, but it can still connect via f::2. 
+
+
+
+OpenVPN (VPN > OpenVPN)
+Server -
+1) Create a certificate authority (System > Certificate Manager > CAs)
+    1. Add a new one
+    2. Name it
+    3. Save
+2) Create a Certificate (System > Certificate Manager > Certificates)
+    1. Add a new one
+    2. Name it
+    3. Ensure the CA is selected
+    4. For Common Name, give it anything (the same name in step 2 is fine)
+    5. For Certificate Type, select Server certificate
+3)  Enable exporting for client VPN profile by downloading the export packet (System > Package Manager > Available Packages)
+    - Search for "openvpn" and you should see one package along the lines of "openvpn-client-export"
+    - Download it
+4) Wizard (VPN > OpenVPN > Wizards tab)
+    1. Type of Server = Local User Access
+    2. Certificate Authority = <yours here>
+    3. Certificate = <your server cert here> > Next   // this is for SERVER, so select the appropriate one and not the client one
+    4. Select interface
+    5. Tunnel Network = the VPN network that will be publicized and assigned 
+    6. set local network > next
+    7. Select the Firewall rule and OpenVPN rule checkbox > Next > Finish
+
+5) Create or modify a user to be used under the VPN (System > User Management > Users)
+    1. Add new or edit a user
+    - Edit user path:
+        2. Scroll down to "User Certificates" and Add a new one
+        3. Name it
+        4. Select CA
+        5. Set common name to name set in 3
+        6. Ensure Certificate Type is User Certificate
+    - Create user
+        2. Fill out user profile (username, password, etc.)
+        3. Select the checkbox by "Certificate"
+        4. Name it
+        5. Select CA
+
+5) Export Client profile (VPN > OpenVPN > Client Export tab)
+    - Remote Access Server = <yours here>
+    - Scroll down and download your .ovpn file based off the client of your choice (most than likely the "Inline configurations" option)
+

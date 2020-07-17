@@ -1,0 +1,55 @@
+Prep for the exam:
+1) From user to privilege down to user
+2) From user to privilege to global and back down
+3) remove DNS resolver
+4) set hostname
+5) save running-config
+6) restore startup-config
+7) erase startup-config
+8) command-line editing key shortcuts
+    - cursor to beginning of the line                                                       = CTRL + A
+    - abort command                                                                         = CTRL + C
+    - cursor to the end of the line                                                         = CTRL + E
+    - cursor back one character                                                             = CTRL + B
+    - cursor forward one character                                                          = CTRL + F
+    - delete the left character                                                             = Backspace / CTRL + H
+    - delete the right character                                                            = CTRL + D
+    - delete the line                                                                       = CTRL + U
+    - delete the left WORD                                                                  = CTRL + W
+    - delete the right WORD                                                                 = 
+    - deletes everything to the right                                                       = CTRL + K
+    - Privileged to EXEC user mode
+    - Interrupt DNS Resolver
+    - Go up the command history list
+    - Go down the command history list
+    - Redisplay the current command on a new line                                           = CTRL + TAB / R / I
+
+
+
+Cisco IOS:
+
+############## set up duplex and speed ############## 
+- It is best to set the speed and duplex on distribusion and core networking devices as best practice. Within the access layer (host to switch), auto negotiation is allowed. This is because autonegotiation can sometimes produce unpredicted results and Cisco switches will failover to half-duplex.
+    config# interface fa 0/0
+    config-if# duplex full
+    config-if# speed 100
+
+############## Remove automatic DNS resolve ##############
+
+config# no ip domain-lookup
+
+############## Set terminal history size ##############
+- terminal history size is about 10 by default. Use the following command to increase the history.
+
+config# terminal history size ?
+
+############## Set interface IP ##############
+- For switches, interfaces do not need an IP address. For other networking devices (routers, firewalls, etc.), they require the IP address be set and the interface turned on.
+
+config# interface g 0/0     // select gigabitEthernet 0/0
+config-if# ip address 192.168.1.1
+config-if# description gateway interface    // always provide a description
+config-if# duplex full
+config-if# speed 100
+config-if# no shut      // enable the interface. You should see debug info.
+
